@@ -1,0 +1,5 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+# Données brutes : volumineuses, à retélécharger avec download_data.py
+data/raw/
