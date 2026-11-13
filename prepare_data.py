@@ -8,6 +8,9 @@ Format « long » (une ligne = un chiffre), colonnes :
 - `base` : effectif sur lequel un pourcentage est calculé (répondants, cibles…)
 - `note` : précision utile (question absente une année, année partielle…)
 
+Produit aussi data/clean/panorama_ia_large.csv : le même contenu, une ligne par
+année et une colonne par « indicateur | catégorie | sous-catégorie ».
+
 Indicateurs produits :
     epoch_modeles_par_an        nb de modèles d'IA publiés par an (tous / notables)
     epoch_domaines              nb de modèles par domaine technique et par an
@@ -423,6 +426,39 @@ def vinuesa():
                 note="avis d'experts fondé sur la littérature ; une cible peut être levier ET frein")
 
 
+def format_large(df):
+    """Tableau « large » : une ligne par année, une colonne par indicateur et catégorie.
+
+    Nom des colonnes : « indicateur | catégorie | sous-catégorie » (ex.
+    « eurostat_ia_secteur | Commerce | UE à 27 »). Une case vide = pas de donnée
+    cette année-là (année non couverte, question absente, valeur non publiée).
+    Les effectifs utiles aux calculs (« base ») sont ajoutés en colonnes.
+    Unités et notes détaillées : voir le tableau long panorama_ia.csv.
+    """
+    d = df.dropna(subset=["valeur"]).copy()
+    morceaux = [d["indicateur"], d["categorie"].fillna(""), d["sous_categorie"].fillna("")]
+    d["colonne"] = [" | ".join(p for p in parts if p) for parts in zip(*morceaux)]
+
+    # effectifs de référence (sinon perdus en passant au format large)
+    k = df[df["indicateur"] == "kaggle_algorithmes"].dropna(subset=["base"]).drop_duplicates("annee")
+    k = k.assign(colonne="kaggle_algorithmes | base (répondants)", valeur=k["base"])
+    s = df[df["indicateur"] == "kaggle_secteurs"].dropna(subset=["base"]).drop_duplicates("annee")
+    s = s.assign(colonne="kaggle_secteurs | base (répondants en emploi)", valeur=s["base"])
+    v = df[df["indicateur"] == "vinuesa_odd"].drop_duplicates("categorie")
+    v = v.assign(colonne="vinuesa_odd | " + v["categorie"] + " | nombre de cibles", valeur=v["base"])
+    d = pd.concat([d, k, s, v])
+
+    # ordre des colonnes : celui des indicateurs dans le tableau long, puis alphabétique
+    ordre = {ind: i for i, ind in enumerate(df["indicateur"].unique())}
+    colonnes = (d.drop_duplicates("colonne")
+                 .assign(o=lambda x: x["indicateur"].map(ordre))
+                 .sort_values(["o", "colonne"])["colonne"])
+    doublons = d.duplicated(["annee", "colonne"])
+    assert not doublons.any(), f"Plusieurs valeurs pour une même case : {d[doublons].head()}"
+    large = d.pivot_table(index="annee", columns="colonne", values="valeur", aggfunc="first")
+    return large[colonnes.tolist()].sort_index()
+
+
 if __name__ == "__main__":
     CLEAN.mkdir(parents=True, exist_ok=True)
     df = pd.concat([epoch(), epoch_pays(), eurostat(), eurostat_pays(), kaggle(), owid(),
@@ -435,3 +471,7 @@ if __name__ == "__main__":
                                                   annee_min=("annee", "min"),
                                                   annee_max=("annee", "max")).to_string())
     print(f"-> {CLEAN / 'panorama_ia.csv'} ({len(df)} lignes)")
+
+    large = format_large(df)
+    large.to_csv(CLEAN / "panorama_ia_large.csv")
+    print(f"-> {CLEAN / 'panorama_ia_large.csv'} ({large.shape[0]} années x {large.shape[1]} colonnes)")
