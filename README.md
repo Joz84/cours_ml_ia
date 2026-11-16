@@ -2,6 +2,8 @@
 
 Données et supports du cours « Data Science et IA » (licence).
 
+**TP · Régression linéaire** (prédire le rayonnement solaire en Polynésie, 2 × 45 min) : [tp/regression_lineaire/README.md](tp/regression_lineaire/README.md)
+
 Tous les fichiers se lisent directement depuis Google Colab, sans rien télécharger :
 
 ```python
