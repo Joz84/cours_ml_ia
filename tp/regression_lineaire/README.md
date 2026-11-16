@@ -303,7 +303,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.metrics import mean_absolute_error
 
 URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/rayonnement_pf.csv"
 df = pd.read_csv(URL)
@@ -411,44 +410,36 @@ saison_hiver austral       -194.3
 
 > **Je prédis → J'exécute → Je constate**
 
-`score` donne le **R²**, c'est-à-dire la part des variations du rayonnement que le modèle explique. La **MAE** (erreur absolue moyenne) donne l'erreur moyenne, en J/cm². On compare avec une **baseline** qui prédit toujours la moyenne, sans rien regarder.
+`score` calcule, sur le jeu de **test**, le **R²** : la part des variations du rayonnement que le modèle explique. Pour juger ce chiffre, on le compare à une **baseline**, un modèle naïf qui répondrait toujours la moyenne, sans rien regarder : son R² vaut 0.
 
 **Questions**
 - Entre quelles valeurs le R² peut-il être ? Que voudrait dire un R² de 0,65 ?
-- La MAE du modèle sera-t-elle plus petite ou plus grande que celle de la baseline ?
-- Au vu des résultats, le modèle a-t-il appris quelque chose ?
+- Au vu du résultat, le modèle fait-il mieux que la baseline ? A-t-il appris quelque chose ?
 
 ```python
 r2 = modele.score(X_test_prepare, y_test)
-y_pred = modele.predict(X_test_prepare)
-mae = mean_absolute_error(y_test, y_pred)
-
-baseline = [y_train.mean()] * len(y_test)  # on prédit toujours la moyenne
-mae_baseline = mean_absolute_error(y_test, baseline)
 
 print("R² (part des variations expliquée) :", round(r2, 2))
-print("MAE du modèle      :", round(mae), "J/cm²")
-print("MAE de la baseline :", round(mae_baseline), "J/cm²")
 ```
 
 **Ce que vous devez obtenir**
 
 ```text
 R² (part des variations expliquée) : 0.74
-MAE du modèle      : 255 J/cm²
-MAE de la baseline : 538 J/cm²
 ```
 
 ### Étape 4 · Comparer prédictions et réalité
 
 > **Je prédis → J'exécute → Je constate**
 
-Chaque point est une journée du jeu de test. Elle est placée selon son rayonnement réel (horizontalement) et le rayonnement prédit par le modèle (verticalement).
+`predict` calcule le rayonnement prédit pour chaque journée du jeu de test. Sur le graphique, chaque point est une journée, placée selon son rayonnement réel (horizontalement) et le rayonnement prédit par le modèle (verticalement).
 
 **Questions**
 - Où seraient les points si le modèle était parfait ?
 
 ```python
+y_pred = modele.predict(X_test_prepare)
+
 plt.figure(figsize=(6, 6))
 plt.scatter(y_test, y_pred, s=10, alpha=0.5, color="#2a78d6")
 plt.plot([0, 4000], [0, 4000], color="#eb6834", linewidth=2, label="Prédiction parfaite")
@@ -550,6 +541,86 @@ R² avec 4 features     : 0.733
 
 ---
 
+## Réutiliser ce code pour n'importe quelle régression linéaire
+
+Le code de ce TP ne sert pas qu'au rayonnement solaire. Le chemin est **toujours le même** :
+
+> charger → choisir X et y → séparer entraînement / test → normaliser les nombres → encoder le texte → réunir → `fit` → `score` → `predict`
+
+Pour un autre problème, par exemple prédire le prix d'un logement, la consommation électrique d'un foyer ou la récolte d'un fa'a'apu, **seules 4 choses changent** :
+
+| | Ce qui change | Dans ce TP | Pour votre problème |
+|---|---|---|---|
+| **1** | **Le fichier** (`URL`) | `rayonnement_pf.csv` | l'adresse de votre fichier CSV |
+| **2** | **Les features** (X) | `heures_soleil`, `humidite`, `pression`, `latitude`, `ile`, `saison` | les colonnes qui servent à prédire |
+| **3** | **La cible** (y) | `rayonnement` | la colonne à prédire, qui doit être un nombre |
+| **4** | **Les nouveaux cas** (`X_nouveau`) | 3 journées inventées | vos cas, avec **exactement les mêmes colonnes** que X |
+
+**Tout le reste ne change pas.** Le code repère tout seul les colonnes numériques et les colonnes de texte (`select_dtypes`) : la normalisation et l'encodage s'adaptent donc automatiquement à vos colonnes, quel que soit leur nombre. Seule condition : le fichier doit être propre, c'est-à-dire sans cases vides, comme vu dans la séance sur le nettoyage.
+
+Voici la recette complète en une seule cellule. Les 4 blocs `À CHANGER` sont en haut. Tout ce qui est sous la ligne `RIEN NE CHANGE` reste identique, quel que soit le problème. Telle quelle, la cellule refait le TP sur le rayonnement.
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.linear_model import LinearRegression
+
+# ===== 1. LE FICHIER ============================================== À CHANGER
+URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/rayonnement_pf.csv"
+
+# ===== 2. LES FEATURES (les colonnes qui servent à prédire) ======= À CHANGER
+features = ["heures_soleil", "humidite", "pression", "latitude", "ile", "saison"]
+
+# ===== 3. LA CIBLE (la colonne à prédire) ========================= À CHANGER
+cible = "rayonnement"
+
+# ===== 4. LES NOUVEAUX CAS (mêmes colonnes que les features) ====== À CHANGER
+X_nouveau = pd.DataFrame({
+    "heures_soleil": [9, 4, 11],
+    "humidite": [76, 76, 75],
+    "pression": [1012, 1020, 1012],
+    "latitude": [-16.50, -27.62, -17.56],
+    "ile": ["Bora Bora", "Rapa", "Tahiti"],
+    "saison": ["été austral", "hiver austral", "été austral"],
+})
+
+# ===================== À PARTIR D'ICI, RIEN NE CHANGE =====================
+df = pd.read_csv(URL)
+X = df[features]
+y = df[cible]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+colonnes_num = X_train.select_dtypes(include="number").columns
+colonnes_texte = X_train.select_dtypes(exclude="number").columns
+scaler = StandardScaler()
+encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+
+X_train_prepare = pd.concat([
+    pd.DataFrame(scaler.fit_transform(X_train[colonnes_num]), columns=colonnes_num, index=X_train.index),
+    pd.DataFrame(encoder.fit_transform(X_train[colonnes_texte]), columns=encoder.get_feature_names_out(), index=X_train.index),
+], axis=1)
+X_test_prepare = pd.concat([
+    pd.DataFrame(scaler.transform(X_test[colonnes_num]), columns=colonnes_num, index=X_test.index),
+    pd.DataFrame(encoder.transform(X_test[colonnes_texte]), columns=encoder.get_feature_names_out(), index=X_test.index),
+], axis=1)
+X_nouveau_prepare = pd.concat([
+    pd.DataFrame(scaler.transform(X_nouveau[colonnes_num]), columns=colonnes_num, index=X_nouveau.index),
+    pd.DataFrame(encoder.transform(X_nouveau[colonnes_texte]), columns=encoder.get_feature_names_out(), index=X_nouveau.index),
+], axis=1)
+
+modele = LinearRegression()
+modele.fit(X_train_prepare, y_train)
+print("R² sur le test :", round(modele.score(X_test_prepare, y_test), 2))
+
+X_nouveau[cible + "_predit"] = modele.predict(X_nouveau_prepare).round(1)
+X_nouveau
+```
+
+Telle quelle, la cellule affiche `R² sur le test : 0.74`, puis les trois journées avec une colonne `rayonnement_predit` : 2 426, 1 358 et 2 656, à quelques dixièmes près.
+
+Une seule chose est à adapter à la main, si vous voulez : les titres, les noms d'axes et les unités des graphiques, qui parlent ici de rayonnement en J/cm².
+
 ## Ce qu'il faut rendre
 
 Un notebook Colab par binôme, avec les deux noms en haut. Il doit contenir :
@@ -569,4 +640,4 @@ Partagez-le avec votre enseignant via « Partager » dans Colab, ou télécharge
 | **Normaliser (StandardScaler)** | Mettre chaque colonne numérique à la même échelle (moyenne 0, écart-type 1). |
 | **Encoder (OneHotEncoder)** | Transformer une colonne de texte en colonnes de 0 et de 1, une par catégorie. |
 | **R² (score)** | La part des variations de la cible que le modèle explique : 1 = parfait, 0 = pas mieux que la moyenne. |
-| **MAE et baseline** | L'erreur moyenne des prédictions, à comparer avec celle d'une baseline qui prédit toujours la moyenne. |
+| **Baseline** | Un modèle naïf qui répond toujours la moyenne : son R² vaut 0, et un vrai modèle doit faire mieux. |

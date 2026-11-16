@@ -58,14 +58,13 @@ REPONSES = {
            "de l'humidité est **négatif** (−56,5) : à soleil égal, un air plus humide (brume, nuages fins) laisse "
            "passer moins de rayonnement, c'est logique. On voit aussi que l'été austral apporte environ "
            "390 J/cm² de plus que l'hiver (194,3 − (−194,3)).",
-    "2.3": "Le R² vaut au maximum **1** (prédiction parfaite) ; **0** veut dire « pas mieux que la moyenne », et il "
-           "peut même être négatif si le modèle fait pire. Un R² de 0,65 voudrait dire que le modèle explique 65 % "
-           "des variations du rayonnement ; ici on obtient **0,74**, soit 74 %. Le modèle se trompe en moyenne de "
-           "**255 J/cm²**, contre **538** pour la baseline : l'erreur est divisée par deux, le modèle a donc bien "
-           "appris quelque chose.",
+    "2.3": "Le R² vaut au maximum **1** (prédiction parfaite) ; **0** veut dire « pas mieux que la baseline », "
+           "qui répond toujours la moyenne, et il peut même être négatif si le modèle fait pire. Un R² de 0,65 "
+           "voudrait dire que le modèle explique 65 % des variations du rayonnement ; ici on obtient **0,74**, "
+           "soit 74 %. C'est nettement mieux que la baseline (R² = 0) : le modèle a bien appris quelque chose.",
     "2.4": "Si le modèle était parfait, tous les points seraient **exactement sur la diagonale** orange "
            "(prédit = réel). Ici, ils s'alignent bien le long de la diagonale, avec une certaine épaisseur : "
-           "c'est l'erreur moyenne de 255 J/cm². Aux extrémités, le modèle « tire vers la moyenne » : "
+           "le modèle se trompe un peu sur chaque journée. Aux extrémités, il « tire vers la moyenne » : "
            "il sous-estime les journées les plus fortes (aucune prédiction au-delà de 2 900 J/cm², pour des "
            "journées réelles jusqu'à 3 500) et surestime les plus faibles.",
     "2.5": "**Tahiti en décembre** reçoit le plus (environ 2 656 J/cm², soit 7,4 kWh/m²) : c'est la journée la plus "
@@ -83,7 +82,7 @@ REPONSES = {
 def decouper(texte):
     """README -> liste de cellules (type, contenu, id d'étape ou None)."""
     debut_tp1 = texte.index("## TP 1")
-    debut_fin = texte.index("## Ce qu'il faut rendre")
+    debut_fin = texte.index("## Réutiliser ce code")
     cellules = [("md", texte[:debut_tp1].strip(), None)]
     for num, bloc in enumerate(re.split(r"(?m)^(?=## TP 2)", texte[debut_tp1:debut_fin]), 1):
         parties = re.split(r"(?m)^(?=### )", bloc)
