@@ -1,0 +1,15 @@
+# Bibliothèques des TP : déjà installées dans Google Colab, rien à faire pour les étudiants
+pandas
+numpy
+scikit-learn
+matplotlib
+
+# Pour regénérer les données et les notebooks en local (scripts/, *.py à la racine)
+requests
+plotly
+openpyxl
+eurostat
+kaggle
+nbformat
+nbconvert
+ipykernel

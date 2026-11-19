@@ -4,6 +4,10 @@ Données et supports du cours « Data Science et IA » (licence).
 
 **TP · Régression linéaire** (prédire le rayonnement solaire en Polynésie, 2 × 45 min) : [tp/regression_lineaire/README.md](tp/regression_lineaire/README.md)
 
+**TP · Classification** (la plage est-elle baignable ?, 2 × 45 min) : [tp/classification/README.md](tp/classification/README.md)
+
+**TP · Clustering** (quels profils d'abonnés à l'eau ?, 2 × 45 min) : [tp/clustering/README.md](tp/clustering/README.md)
+
 Tous les fichiers se lisent directement depuis Google Colab, sans rien télécharger :
 
 ```python
