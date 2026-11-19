@@ -4,10 +4,12 @@ CSV = "abonnes_eau.csv"
 
 # Cellules à trous : code complet du corrigé, par identifiant d'étape
 TROUS = {
-    "1.3": '''X = df[colonnes_num]
-
-print("X :", X.shape)
-print(list(X.columns))''',
+    "1.0": '''# =============== RÉGLAGES DU PROJET : les seules lignes à changer ===============
+URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/abonnes_eau.csv"  # À CHANGER : le fichier
+colonnes_a_exclure = ["abonne", "commune"]   # À CHANGER : identifiants, et colonnes qui ne décrivent pas le comportement
+K = 3                           # À CHANGER : le nombre de groupes (on le vérifiera avec la méthode du coude)
+colonne_a_croiser = "commune"   # À CHANGER (bonus Q7) : une colonne texte à comparer aux groupes
+# ================================================================================''',
     "2.Q6": '''from sklearn.metrics import silhouette_score
 
 scores = {}
@@ -22,30 +24,33 @@ print("\\nMeilleur K selon la silhouette :", meilleur_k)''',
 }
 
 REPONSES = {
-    "1.0": "**600 abonnés** (une ligne chacun) et **7 colonnes**.",
-    "1.1": "**Aucune** : il n'y a pas de cible, rien à prédire. Sans cible, il n'y a pas de « bonne réponse » à "
+    "1.0": "On écarte **`abonne`** et **`commune`**. `abonne` est un simple identifiant, différent pour chacun, qui ne "
+           "dit rien des habitudes de consommation. `commune` dit *où* habite l'abonné, alors qu'on cherche des "
+           "groupes selon *comment* il consomme ; on la retrouvera en Q7. K = 3 est un choix de départ, qu'on "
+           "vérifiera avec la méthode du coude. Avec K = 600, chaque abonné serait seul dans son groupe : l'inertie "
+           "serait nulle, mais les groupes ne nous apprendraient rien.",
+    "1.1": "**600 abonnés** (une ligne chacun) et **7 colonnes**.",
+    "1.2": "**Aucune** : il n'y a pas de cible, rien à prédire. Sans cible, il n'y a pas de « bonne réponse » à "
            "vérifier sur un jeu de test, donc pas besoin de séparer entraînement et test. Et il n'y a évidemment "
            "pas de cible à encoder. Il ne reste que 3 étapes : trier, choisir les colonnes et normaliser.",
-    "1.2": "Deux colonnes ne sont pas numériques : `abonne` (l'identifiant) et `commune`. On les écarte : "
-           "l'identifiant ne dit rien des habitudes de consommation, et on cherche des groupes selon *comment* "
-           "les abonnés consomment, pas *où* ils habitent.",
-    "1.3": "`X = df[colonnes_num]` : X a **5 colonnes** (consommation, pic d'été, part de nuit, nombre de "
-           "personnes, surface de jardin) pour 600 abonnés.",
-    "1.4": "C'est `surface_jardin_m2` : en moyenne 213 m², jusqu'à 1 048 m², avec un écart-type de 270, contre 1,9 "
+    "1.3": "Deux colonnes ne sont pas numériques : `abonne` (l'identifiant) et `commune`. Ce sont justement celles "
+           "qu'on a écartées dans les réglages.",
+    "1.4": "X a **5 colonnes** : consommation, pic d'été, part de nuit, nombre de personnes et surface de jardin, "
+           "pour 600 abonnés.",
+    "1.5": "C'est `surface_jardin_m2` : en moyenne 213 m², jusqu'à 1 048 m², avec un écart-type de 270, contre 1,9 "
            "pour `nb_personnes`. Sans normalisation, les distances seraient presque entièrement décidées par le "
            "jardin. Après normalisation, toutes les colonnes ont une moyenne de 0 et un écart-type de 1.",
-    "2.1": "K = 3 est un choix de départ : on soupçonne quelques grands profils d'abonnés, et on vérifiera ce choix "
-           "avec la méthode du coude (Q3). **K est choisi par nous**, pas par le modèle. Avec K = 600, chaque abonné "
-           "serait seul dans son groupe : l'inertie serait nulle, mais les groupes ne nous apprendraient rien.",
+    "2.1": "Non : le modèle est encore une « boîte vide », il n'a vu aucune donnée. Il connaît seulement le nombre "
+           "de groupes à chercher, K = 3, que **nous avons choisi** dans les réglages.",
     "2.2": "Parce qu'il n'y a **pas de cible** : le K-Means ne cherche pas à reproduire une bonne réponse, il "
-           "cherche seulement des abonnés proches les uns des autres. Il n'a besoin que des features.",
+           "cherche seulement des individus proches les uns des autres. Il n'a besoin que des features.",
     "2.3": "Non : 0, 1 et 2 ne sont que des **étiquettes**. Le groupe 2 n'est ni « mieux » ni « plus grand » que le "
            "groupe 0, et avec un autre `random_state`, les mêmes groupes pourraient recevoir d'autres numéros. "
            "C'est à nous de comprendre ce qu'ils représentent.",
     "2.4": "Le **groupe 2** consomme le plus (58,7 m³ par mois en moyenne). Le **groupe 0** a de loin les plus grands "
            "jardins (548 m² en moyenne). Le groupe 1 consomme peu (10,3 m³) et n'a presque pas de jardin.",
     "2.Q1": "**208** abonnés dans le groupe 0, **275** dans le groupe 1 et **117** dans le groupe 2. Les groupes "
-            "n'ont pas la même taille : le K-Means ne cherche pas des groupes égaux, mais des groupes d'abonnés "
+            "n'ont pas la même taille : le K-Means ne cherche pas des groupes égaux, mais des groupes d'individus "
             "qui se ressemblent.",
     "2.Q2": "**Groupe 0, « les familles avec jardin »** : environ 5 personnes, plus de 500 m² de jardin ; leur "
             "consommation grimpe de 44 % l'été et un tiers de l'eau part la nuit, sans doute pour l'arrosage. "

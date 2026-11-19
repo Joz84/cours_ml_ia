@@ -11,6 +11,17 @@ Dans le cours, vous avez vu la **classification** : le modèle ne répond plus �
 - **Méthode :** copiez chaque cellule de code dans une nouvelle cellule Colab, dans l'ordre, puis exécutez-la avec Maj + Entrée.
 - **Quand une cellule est à compléter**, un encadré « Ce que vous dites à l'assistant » vous donne la phrase à dire à ChatGPT ou à Claude.
 
+## Un code réutilisable pour toute classification
+
+Ce TP est écrit pour servir **à n'importe quel problème de classification**, pas seulement à la baignade. Tout ce qui est propre au projet est rassemblé à deux endroits, signalés par `À CHANGER` :
+
+| Où ? | Ce qui change d'un projet à l'autre |
+|---|---|
+| **La cellule « Réglages »** (TP 1, étape 0) | le fichier, la colonne cible, les colonnes à écarter, la classe à ne pas rater |
+| **Le cas inventé** (TP 2, question Q6) | les valeurs d'un nouveau cas, avec les colonnes de votre fichier |
+
+**Toutes les autres cellules se copient telles quelles**, quel que soit le projet : elles n'utilisent que les réglages.
+
 ## Le rituel, à chaque étape
 
 > **Je prédis** : je réponds aux questions *avant* d'exécuter la cellule.
@@ -32,7 +43,7 @@ Le fichier `baignade_taharuu.csv` suit **3 plages de Tahiti** (`taharuu`, `vaiav
 | `temperature_C` | Température moyenne de l'air, en °C |
 | `debit_m3s` | Débit de la rivière qui débouche près de la plage, en m³/s |
 | `saison` | `ete_austral` (novembre à avril) ou `hiver_austral` (mai à octobre) |
-| `conforme` | **La cible** : `oui` si l'eau est conforme pour la baignade, `non` sinon |
+| `conforme` | `oui` si l'eau est conforme pour la baignade, `non` sinon |
 
 **Attention : ces données sont en partie simulées.** La pluie et la température sont **réelles** : ce sont les mesures Météo-France des pluviomètres les plus proches (Papara, Faa'a, Paea). En revanche, le **débit** et la **conformité** sont **simulés** à partir de règles réalistes : l'eau est plus souvent non conforme après de fortes pluies, quand la rivière est en crue, et à Taharu'u, à l'embouchure d'une grande rivière. Ce ne sont pas de vrais résultats d'analyse. La règle complète est décrite dans [`scripts/prepare_baignade.py`](../../scripts/prepare_baignade.py).
 
@@ -44,22 +55,52 @@ Le fichier `baignade_taharuu.csv` suit **3 plages de Tahiti** (`taharuu`, `vaiav
 
 Objectif : transformer le tableau en un tableau **que le modèle sait lire**, en suivant les 5 étapes du cours : **séparer**, **trier**, **normaliser**, **encoder** les features texte et **encoder la cible**.
 
-### Étape 0 · Charger les données
+### Étape 0 · Les réglages du projet
 
 > **Je prédis → J'exécute → Je constate**
 
-Cette cellule importe les outils et charge le fichier directement depuis GitHub. Elle affiche la taille du tableau et ses 5 premières lignes.
+C'est **la seule cellule propre à ce projet**. À vous de la compléter, en vous aidant du tableau « Les données » ci-dessus. Il faut trois choses :
+- la **cible**, c'est-à-dire la colonne à prédire ;
+- les **colonnes à écarter**, celles qui ne servent pas à prédire ;
+- la **classe à détecter**, celle qu'on ne veut surtout pas rater.
+
+> **Ce que vous dites à l'assistant**
+>
+> « Je fais une classification dans Google Colab. Mon fichier a les colonnes `date`, `plage`, `pluie_24h_mm`, `pluie_72h_mm`, `temperature_C`, `debit_m3s`, `saison` et `conforme` (`oui` / `non`). Je veux savoir si l'eau de baignade est conforme. Complète ces trois lignes Python : `cible = ...` (la colonne à prédire), `colonnes_a_exclure = [...]` (les colonnes qui ne servent pas à prédire) et `classe_a_detecter = ...` (la valeur de la cible qu'il ne faut pas rater), et explique tes choix. »
+
+Collez les trois lignes à la place des `___`.
+
+**Questions**
+- Quelle colonne est la cible ? Pourquoi la date ne sert-elle à rien pour prédire un jour futur ?
+- Quelle classe ne faut-il surtout pas rater : `oui` ou `non` ? Pourquoi ?
+
+```python
+# =============== RÉGLAGES DU PROJET : les seules lignes à changer ===============
+URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/baignade_taharuu.csv"  # À CHANGER : le fichier
+cible = ___                # À CHANGER : la colonne à prédire, entre guillemets
+colonnes_a_exclure = ___   # À CHANGER : la liste des colonnes qui ne servent pas à prédire
+classe_a_detecter = ___    # À CHANGER : la classe qu'on ne veut pas rater, entre guillemets
+# ================================================================================
+```
+
+**Ce que vous devez obtenir**
+
+Rien ne s'affiche : la cellule enregistre seulement vos réglages. Si une erreur `NameError` apparaît, c'est qu'il reste un `___`.
+
+### Étape 1 · Charger les données
+
+> **Je prédis → J'exécute → Je constate**
+
+Cette cellule importe les outils et charge le fichier. Elle affiche la taille du tableau et ses 5 premières lignes.
 
 **Questions**
 - Combien de lignes et de colonnes le tableau contient-il ?
-- Quelle colonne est la cible ? Est-ce un nombre ou une catégorie ?
 
 ```python
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 
-URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/baignade_taharuu.csv"
 df = pd.read_csv(URL)
 
 print("Nombre de lignes et de colonnes :", df.shape)
@@ -77,7 +118,7 @@ df.head()
 2  2023-01-01   vaiava          14.3          14.3           27.8       1.85  ete_austral      oui
 ```
 
-### Étape 1 · Les types de colonnes
+### Étape 2 · Les types de colonnes
 
 > **Je prédis → J'exécute → Je constate**
 
@@ -108,22 +149,22 @@ Data columns (total 8 columns):
  7   conforme       2193 non-null   object
 ```
 
-Toutes les colonnes ont 2 193 cases remplies : il n'y a aucune case vide. Selon la version de Colab, les colonnes de texte s'affichent `object` ou `str`.
+Toutes les colonnes ont 2 193 cases remplies : il n'y a aucune case vide.
 
-### Étape 2 · Combien de « oui », combien de « non » ?
+### Étape 3 · Combien de cas dans chaque classe ?
 
 > **Je prédis → J'exécute → Je constate**
 
-On compte les jours conformes et non conformes, en nombre puis en pourcentage.
+On compte les lignes de chaque classe de la cible, en nombre puis en pourcentage.
 
 **Questions**
 - Les deux classes sont-elles aussi fréquentes l'une que l'autre ?
-- Un modèle « paresseux » qui répondrait toujours `oui` aurait-il souvent raison ?
+- Un modèle « paresseux » qui répondrait toujours la classe la plus fréquente aurait-il souvent raison ?
 
 ```python
-print(df["conforme"].value_counts())
+print(df[cible].value_counts())
 print()
-print((df["conforme"].value_counts(normalize=True) * 100).round(1))
+print((df[cible].value_counts(normalize=True) * 100).round(1))
 ```
 
 **Ce que vous devez obtenir**
@@ -140,73 +181,67 @@ non    16.3
 Name: proportion, dtype: float64
 ```
 
-Les deux classes sont très **déséquilibrées** : seulement 16,3 % de jours non conformes.
+Les classes sont très **déséquilibrées** : seulement 16,3 % de jours non conformes.
 
-### Étape 3 · Choisir les features et la cible
+### Étape 4 · Les features (X) et la cible (y)
 
 > **Je prédis → J'exécute → Je constate**
 
-À vous de choisir : quelles colonnes donne-t-on au modèle (**X**), et quelle colonne doit-il apprendre à prédire (**y**) ? Une colonne ne doit pas aller dans X : la date, qui ne se répétera jamais.
-
-> **Ce que vous dites à l'assistant**
->
-> « Dans Google Colab, j'ai un DataFrame pandas `df` avec les colonnes `date`, `plage`, `pluie_24h_mm`, `pluie_72h_mm`, `temperature_C`, `debit_m3s`, `saison` et `conforme`. Je veux prédire `conforme`. Écris-moi deux lignes de code : `X` avec toutes les colonnes sauf `date` et `conforme`, et `y` avec la colonne `conforme`. »
-
-Collez ces deux lignes à la place des `___`.
+**X** contient les features : toutes les colonnes, sauf la cible et les colonnes écartées. **y** contient la cible.
 
 **Questions**
-- Pourquoi `conforme` ne doit-il surtout pas être dans X ?
-- Pourquoi la date ne sert-elle à rien pour prédire un jour futur ?
+- Combien de colonnes aura X ?
+- Pourquoi la cible ne doit-elle surtout pas être dans X ?
 
 ```python
-# À compléter : collez ici les deux lignes données par l'assistant
-X = ___
-y = ___
+X = df.drop(columns=colonnes_a_exclure + [cible])
+y = df[cible]
 
 print("X :", X.shape, "  y :", y.shape)
-for colonne in X.columns:
-    print(f"  {colonne:15} ->", "nombre" if pd.api.types.is_numeric_dtype(X[colonne]) else "texte")
+X.dtypes
 ```
 
 **Ce que vous devez obtenir**
 
+`X : (2193, 6)   y : (2193,)`, puis le type de chaque feature :
+
 ```text
-X : (2193, 6)   y : (2193,)
-  plage           -> texte
-  pluie_24h_mm    -> nombre
-  pluie_72h_mm    -> nombre
-  temperature_C   -> nombre
-  debit_m3s       -> nombre
-  saison          -> texte
+plage             object
+pluie_24h_mm     float64
+pluie_72h_mm     float64
+temperature_C    float64
+debit_m3s        float64
+saison            object
 ```
 
-Si vous obtenez une erreur `KeyError`, vérifiez l'orthographe des noms de colonnes.
-
-### Étape 4 · Séparer entraînement et test
+### Étape 5 · Séparer entraînement et test
 
 > **Je prédis → J'exécute → Je constate**
 
-On met de côté 20 % des jours pour le **test**. `stratify=y` garde **la même proportion de `non`** dans l'entraînement et dans le test. C'est important quand une classe est rare : sinon, le hasard pourrait en mettre presque aucun dans le test.
+On met de côté 20 % des lignes pour le **test**. `stratify=y` garde **la même proportion de chaque classe** dans l'entraînement et dans le test. C'est important quand une classe est rare : sinon, le hasard pourrait en mettre presque aucune dans le test.
 
 **Questions**
-- Combien de lignes dans chaque jeu ?
-- Quelle part de `non` dans chacun ?
+- Combien de lignes dans chaque jeu ? Quelle part de la classe à détecter dans chacun ?
 
 ```python
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-print("Entraînement :", X_train.shape[0], "lignes, dont", round((y_train == "non").mean() * 100, 1), "% de non")
-print("Test         :", X_test.shape[0], "lignes, dont", round((y_test == "non").mean() * 100, 1), "% de non")
+print("Entraînement :", X_train.shape[0], "lignes")
+print("Test         :", X_test.shape[0], "lignes")
+print("Part de", classe_a_detecter, "dans l'entraînement :", round((y_train == classe_a_detecter).mean() * 100, 1), "%")
+print("Part de", classe_a_detecter, "dans le test        :", round((y_test == classe_a_detecter).mean() * 100, 1), "%")
 ```
 
 **Ce que vous devez obtenir**
 
 ```text
-Entraînement : 1754 lignes, dont 16.3 % de non
-Test         : 439 lignes, dont 16.4 % de non
+Entraînement : 1754 lignes
+Test         : 439 lignes
+Part de non dans l'entraînement : 16.3 %
+Part de non dans le test        : 16.4 %
 ```
 
-### Étape 5 · Trier les colonnes numériques et non numériques
+### Étape 6 · Trier les colonnes numériques et non numériques
 
 > **Je prédis → J'exécute → Je constate**
 
@@ -230,7 +265,7 @@ Colonnes numériques     : ['pluie_24h_mm', 'pluie_72h_mm', 'temperature_C', 'de
 Colonnes non numériques : ['plage', 'saison']
 ```
 
-### Étape 6 · Normaliser les colonnes numériques
+### Étape 7 · Normaliser les colonnes numériques
 
 > **Je prédis → J'exécute → Je constate**
 
@@ -274,11 +309,11 @@ std             1.0           1.0            1.0        1.0
 
 Après normalisation, toutes les colonnes ont une moyenne de 0 et un écart-type de 1. `-0.0` est simplement un 0 arrondi.
 
-### Étape 7 · Encoder les features texte
+### Étape 8 · Encoder les features texte
 
 > **Je prédis → J'exécute → Je constate**
 
-Le `OneHotEncoder` transforme chaque catégorie de `plage` et de `saison` en une colonne de 0 et de 1.
+Le `OneHotEncoder` transforme chaque catégorie des colonnes texte en une colonne de 0 et de 1.
 
 **Questions**
 - Combien de colonnes vont apparaître ?
@@ -309,23 +344,24 @@ puis un tableau de 0 et de 1 qui commence ainsi :
 31           0.0            1.0           0.0                 1.0                   0.0
 ```
 
-### Étape 8 · Encoder la cible
+### Étape 9 · Encoder la cible
 
 > **Je prédis → J'exécute → Je constate**
 
-La cible aussi est du texte (`oui` / `non`). Le `LabelEncoder` donne un numéro à chaque classe, par ordre alphabétique. Retenez bien quel numéro reçoit `non` : vous en aurez besoin au TP 2.
+La cible aussi est du texte. Le `LabelEncoder` donne un numéro à chaque classe, par ordre alphabétique. La cellule retient aussi le numéro de la classe à détecter dans `code_positif` : le TP 2 en aura besoin.
 
 **Questions**
-- Quel numéro recevra `non`, et lequel recevra `oui` ?
+- Quel numéro recevra chaque classe ? Quel sera le numéro de la classe à détecter ?
 
 ```python
 label_encoder = LabelEncoder()
 y_train_enc = label_encoder.fit_transform(y_train)
 y_test_enc = label_encoder.transform(y_test)
+code_positif = label_encoder.transform([classe_a_detecter])[0]
 
 for numero, classe in enumerate(label_encoder.classes_):
-    print(f"{classe} -> {numero}")
-print("\nLes 5 premières cibles d'entraînement :", list(y_train[:5]), "->", y_train_enc[:5].tolist())
+    print(classe, "->", numero)
+print("Classe à détecter :", classe_a_detecter, "-> numéro", code_positif)
 ```
 
 **Ce que vous devez obtenir**
@@ -333,13 +369,10 @@ print("\nLes 5 premières cibles d'entraînement :", list(y_train[:5]), "->", y_
 ```text
 non -> 0
 oui -> 1
-
-Les 5 premières cibles d'entraînement : ['oui', 'non', 'non', 'oui', 'non'] -> [1, 0, 0, 1, 0]
+Classe à détecter : non -> numéro 0
 ```
 
-**`non` reçoit le numéro 0 et `oui` le numéro 1**, par ordre alphabétique.
-
-### Étape 9 · Tout réunir
+### Étape 10 · Tout réunir
 
 > **Je prédis → J'exécute → Je constate**
 
@@ -379,19 +412,24 @@ Objectif : suivre les quatre verbes du cours, **importer et créer → `fit` →
 
 > **J'exécute**
 
-Ouvrez un nouveau notebook Colab, ou continuez dans celui du TP 1, et exécutez cette cellule. Elle refait tout le TP 1, réponse de l'étape 3 comprise, et importe les outils d'évaluation.
+Ouvrez un nouveau notebook Colab, ou continuez dans celui du TP 1, et exécutez cette cellule. Elle refait tout le TP 1, réglages compris, et importe les outils d'évaluation. Pour un autre projet, seul le bloc « RÉGLAGES » change.
 
 ```python
+# =============== RÉGLAGES DU PROJET : les seules lignes à changer ===============
+URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/baignade_taharuu.csv"  # À CHANGER : le fichier
+cible = "conforme"            # À CHANGER : la colonne à prédire
+colonnes_a_exclure = ["date"]  # À CHANGER : les colonnes qui ne servent pas à prédire
+classe_a_detecter = "non"     # À CHANGER : la classe qu'on ne veut pas rater
+# ================================================================================
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
 from sklearn.metrics import confusion_matrix, recall_score, precision_score
 
-URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/baignade_taharuu.csv"
 df = pd.read_csv(URL)
-
-X = df.drop(columns=["date", "conforme"])
-y = df["conforme"]
+X = df.drop(columns=colonnes_a_exclure + [cible])
+y = df[cible]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 colonnes_num = X_train.select_dtypes(include="number").columns
@@ -412,6 +450,7 @@ X_test_texte = pd.DataFrame(encoder.transform(X_test[colonnes_texte]),
 label_encoder = LabelEncoder()
 y_train_enc = label_encoder.fit_transform(y_train)
 y_test_enc = label_encoder.transform(y_test)
+code_positif = label_encoder.transform([classe_a_detecter])[0]
 
 X_train_prep = pd.concat([X_train_num, X_train_texte], axis=1)
 X_test_prep = pd.concat([X_test_num, X_test_texte], axis=1)
@@ -446,7 +485,7 @@ Une petite boîte qui affiche `LogisticRegression(random_state=42)`.
 
 > **Je prédis → J'exécute → Je constate**
 
-Le modèle apprend, sur les jours d'entraînement, le lien entre les features et la cible encodée.
+Le modèle apprend, sur les lignes d'entraînement, le lien entre les features et la cible encodée.
 
 **Questions**
 - Pourquoi donne-t-on `y_train_enc` et pas `y_train` ?
@@ -483,17 +522,16 @@ Exactitude sur le test : 91.1 %
 
 > **Je prédis → J'exécute → Je constate**
 
-`predict` donne la classe prédite pour chaque jour du test : un numéro, qu'on retraduit en `oui` / `non` avec `inverse_transform`.
+`predict` donne la classe prédite pour chaque ligne du test : un numéro, qu'on retraduit en texte avec `inverse_transform`. On compare avec la vraie classe sur les 10 premières lignes.
 
 **Questions**
-- Sur les 10 premiers jours du test, le modèle se trompera-t-il ?
+- Sur ces 10 lignes, le modèle se trompera-t-il ?
 
 ```python
 y_pred = modele.predict(X_test_prep)
 
-comparaison = pd.DataFrame({"vraiment": y_test[:10].values,
-                            "predit": label_encoder.inverse_transform(y_pred[:10])})
-comparaison
+pd.DataFrame({"vraiment": y_test[:10].values,
+              "predit": label_encoder.inverse_transform(y_pred[:10])})
 ```
 
 **Ce que vous devez obtenir**
@@ -525,92 +563,87 @@ Relisez le résultat de l'étape 3.
 
 > **Je prédis → J'exécute → Je constate**
 
-Un modèle « paresseux » répond **toujours `oui`**, sans rien regarder. C'est notre **baseline**. Son exactitude se lit directement dans `value_counts` : c'est la part de `oui` dans le test.
+Un modèle « paresseux » répond **toujours la classe la plus fréquente**, sans rien regarder. C'est notre **baseline**. On trouve cette classe avec `value_counts`, puis on calcule son exactitude sur le test.
 
 **Questions**
 - Quelle est l'exactitude de ce modèle paresseux ? Comparez-la au score de votre modèle.
 - Un score de 90 % est-il impressionnant ici ?
 
 ```python
-part_oui = y_test.value_counts(normalize=True)["oui"]
-print("Exactitude du modèle paresseux (toujours oui) :", round(part_oui * 100, 1), "%")
-print("Exactitude de notre modèle                    :", round(exactitude * 100, 1), "%")
+classe_frequente = y_train.value_counts().index[0]
+exactitude_paresseux = (y_test == classe_frequente).mean()
+
+print("Le modèle paresseux répond toujours :", classe_frequente)
+print("Exactitude du modèle paresseux :", round(exactitude_paresseux * 100, 1), "%")
+print("Exactitude de notre modèle     :", round(exactitude * 100, 1), "%")
 ```
 
 **Ce que vous devez obtenir**
 
 ```text
-Exactitude du modèle paresseux (toujours oui) : 83.6 %
-Exactitude de notre modèle                    : 91.1 %
+Le modèle paresseux répond toujours : oui
+Exactitude du modèle paresseux : 83.6 %
+Exactitude de notre modèle     : 91.1 %
 ```
 
 ### Q3 · La matrice de confusion
 
 > **Je prédis → J'exécute → Je constate**
 
-La **matrice de confusion** croise la vérité (lignes) et la prédiction (colonnes). Ici, la classe qui compte, la classe « positive », est `non` : c'est elle qu'on cherche à repérer. On place donc `non` en premier :
+La **matrice de confusion** croise la vérité (lignes) et la prédiction (colonnes). La classe « positive », celle qu'on cherche à repérer, est la classe à détecter : ici `non`, une eau non conforme. On la place en premier :
 
-| | prédit non conforme | prédit conforme |
+| | prédit non (non conforme) | prédit oui (conforme) |
 |---|---|---|
-| **vraiment non conforme** | VP (vrais positifs) | FN (faux négatifs : ratés) |
-| **vraiment conforme** | FP (faux positifs : fausses alertes) | VN (vrais négatifs) |
+| **vraiment non** | VP (vrais positifs) | FN (faux négatifs : ratés) |
+| **vraiment oui** | FP (faux positifs : fausses alertes) | VN (vrais négatifs) |
 
 **Questions**
 - Combien de jours non conformes le modèle a-t-il **ratés** ?
 - Combien de fausses alertes a-t-il données ?
 
 ```python
-code_non = label_encoder.transform(["non"])[0]
-code_oui = label_encoder.transform(["oui"])[0]
+ordre = [code_positif, 1 - code_positif]       # la classe à détecter d'abord, puis l'autre
+noms = label_encoder.inverse_transform(ordre)  # leurs noms, dans le même ordre
 
-matrice = confusion_matrix(y_test_enc, y_pred, labels=[code_non, code_oui])
-print(matrice)
-
+matrice = confusion_matrix(y_test_enc, y_pred, labels=ordre)
 pd.DataFrame(matrice,
-             index=["vraiment non conforme", "vraiment conforme"],
-             columns=["prédit non conforme", "prédit conforme"])
+             index=["vraiment " + noms[0], "vraiment " + noms[1]],
+             columns=["prédit " + noms[0], "prédit " + noms[1]])
 ```
 
 **Ce que vous devez obtenir**
 
 ```text
-[[ 42  30]
- [  9 358]]
+              prédit non  prédit oui
+vraiment non          42          30
+vraiment oui           9         358
 ```
 
-puis le même tableau, lisible :
-
-```text
-                       prédit non conforme  prédit conforme
-vraiment non conforme                   42               30
-vraiment conforme                        9              358
-```
-
-### Q4 · Rappel et précision de la classe `non`
+### Q4 · Rappel et précision de la classe à détecter
 
 > **Je prédis → J'exécute → Je constate**
 
-- **Rappel** de `non` : parmi les jours **vraiment** non conformes (la ligne du haut), quelle part le modèle a-t-il repérée ?
-- **Précision** de `non` : parmi les jours **prédits** non conformes (la colonne de gauche), quelle part l'était vraiment ?
+- **Rappel** : parmi les lignes **vraiment** de la classe à détecter (la ligne du haut), quelle part le modèle a-t-il repérée ?
+- **Précision** : parmi les lignes **prédites** de la classe à détecter (la colonne de gauche), quelle part l'était vraiment ?
 
-`pos_label=code_non` dit à scikit-learn que la classe qui compte est `non`.
+`pos_label=code_positif` dit à scikit-learn quelle classe compte.
 
 **Questions**
 - Calculez-les d'abord à la main avec la matrice de Q3, puis vérifiez.
 - Ici, rater une plage polluée coûte cher (des baigneurs malades). Faut-il privilégier le rappel ou la précision ? Pourquoi ?
 
 ```python
-rappel_non = recall_score(y_test_enc, y_pred, pos_label=code_non)
-precision_non = precision_score(y_test_enc, y_pred, pos_label=code_non)
+rappel = recall_score(y_test_enc, y_pred, pos_label=code_positif)
+precision = precision_score(y_test_enc, y_pred, pos_label=code_positif)
 
-print("Rappel de non    :", round(rappel_non * 100, 1), "%")
-print("Précision de non :", round(precision_non * 100, 1), "%")
+print("Rappel    de", classe_a_detecter, ":", round(rappel * 100, 1), "%")
+print("Précision de", classe_a_detecter, ":", round(precision * 100, 1), "%")
 ```
 
 **Ce que vous devez obtenir**
 
 ```text
-Rappel de non    : 58.3 %
+Rappel    de non : 58.3 %
 Précision de non : 82.4 %
 ```
 
@@ -618,7 +651,9 @@ Précision de non : 82.4 %
 
 > **Je prédis → J'exécute → Je constate**
 
-`predict` déclare `non` quand la **probabilité** de `non` dépasse **0,5**. Mais ce **seuil** est un choix. Avec `predict_proba`, on récupère la probabilité de `non` pour chaque jour, puis on essaie trois seuils : 0,3, 0,5 et 0,7.
+`predict` déclare la classe à détecter quand sa **probabilité** dépasse **0,5**. Mais ce **seuil** est un choix. Avec `predict_proba`, on récupère cette probabilité pour chaque ligne du test, et on choisit nous-mêmes le seuil.
+
+Exécutez la cellule avec `seuil = 0.3`, puis changez la première ligne en `seuil = 0.5`, puis en `seuil = 0.7`, et relancez à chaque fois.
 
 **Questions**
 - Si on abaisse le seuil à 0,3, le rappel va-t-il monter ou baisser ? Et la précision ?
@@ -626,35 +661,38 @@ Précision de non : 82.4 %
 - Conclusion en deux phrases : quel seuil choisiriez-vous pour protéger les baigneurs ?
 
 ```python
-proba_non = modele.predict_proba(X_test_prep)[:, code_non]
+seuil = 0.3   # À ESSAYER : 0.3, puis 0.5, puis 0.7
 
-for seuil in [0.3, 0.5, 0.7]:
-    # on déclare « non » quand la probabilité de non atteint le seuil
-    y_pred_seuil = [code_non if p >= seuil else code_oui for p in proba_non]
-    rappel = recall_score(y_test_enc, y_pred_seuil, pos_label=code_non)
-    precision = precision_score(y_test_enc, y_pred_seuil, pos_label=code_non)
-    print(f"Seuil {seuil} : rappel de non = {rappel * 100:.1f} %   précision de non = {precision * 100:.1f} %")
+proba = modele.predict_proba(X_test_prep)[:, code_positif]  # probabilité de la classe à détecter
+alerte = proba >= seuil                       # vrai si le modèle déclare la classe à détecter
+vraiment = y_test == classe_a_detecter        # vrai si la ligne est vraiment de cette classe
+
+print("Seuil", seuil, ": rappel =", round(recall_score(vraiment, alerte) * 100, 1), "%",
+      "  précision =", round(precision_score(vraiment, alerte) * 100, 1), "%")
 ```
 
 **Ce que vous devez obtenir**
 
+Une ligne par essai :
+
 ```text
-Seuil 0.3 : rappel de non = 69.4 %   précision de non = 72.5 %
-Seuil 0.5 : rappel de non = 58.3 %   précision de non = 82.4 %
-Seuil 0.7 : rappel de non = 44.4 %   précision de non = 91.4 %
+Seuil 0.3 : rappel = 69.4 %   précision = 72.5 %
+Seuil 0.5 : rappel = 58.3 %   précision = 82.4 %
+Seuil 0.7 : rappel = 44.4 %   précision = 91.4 %
 ```
 
-### Q6 · Prédire pour un jour que vous inventez
+### Q6 · Prédire pour un cas que vous inventez
 
 > **Je prédis → J'exécute → Je constate**
 
-Inventez un jour : changez les valeurs ci-dessous (pluie, débit, plage, saison…). Le jour passe par **exactement le même preprocessing** que l'entraînement (`transform`, jamais `fit`), puis par `predict` et `predict_proba`.
+Inventez un jour : changez les valeurs ci-dessous. C'est la **seule autre cellule propre au projet** : elle doit contenir exactement les colonnes de X. Le cas passe par **le même preprocessing** que l'entraînement (`transform`, jamais `fit`), puis par `predict` et `predict_proba`.
 
 **Questions**
 - Pour le jour que vous avez inventé, que va répondre le modèle ? Avec quelle probabilité ?
 - Le modèle a-t-il raison, selon vous ? Essayez un jour sec, puis un jour de grosse pluie.
 
 ```python
+# À CHANGER : un cas inventé, avec exactement les colonnes de X
 X_nouveau = pd.DataFrame({
     "plage": ["taharuu"],
     "pluie_24h_mm": [35.0],
@@ -664,14 +702,13 @@ X_nouveau = pd.DataFrame({
     "saison": ["ete_austral"],
 })
 
-X_nouveau_num = pd.DataFrame(scaler.transform(X_nouveau[colonnes_num]), columns=colonnes_num)
-X_nouveau_texte = pd.DataFrame(encoder.transform(X_nouveau[colonnes_texte]),
-                               columns=encoder.get_feature_names_out())
-X_nouveau_prep = pd.concat([X_nouveau_num, X_nouveau_texte], axis=1)
+X_nouveau_prep = pd.concat([
+    pd.DataFrame(scaler.transform(X_nouveau[colonnes_num]), columns=colonnes_num),
+    pd.DataFrame(encoder.transform(X_nouveau[colonnes_texte]), columns=encoder.get_feature_names_out()),
+], axis=1)
 
-prediction = label_encoder.inverse_transform(modele.predict(X_nouveau_prep))[0]
-probabilite_non = modele.predict_proba(X_nouveau_prep)[0, code_non]
-print("Conforme ?", prediction, "  (probabilité de non :", round(probabilite_non * 100), "%)")
+print("Prédiction :", label_encoder.inverse_transform(modele.predict(X_nouveau_prep))[0])
+print("Probabilité de", classe_a_detecter, ":", round(modele.predict_proba(X_nouveau_prep)[0, code_positif] * 100), "%")
 ```
 
 **Ce que vous devez obtenir**
@@ -679,7 +716,8 @@ print("Conforme ?", prediction, "  (probabilité de non :", round(probabilite_no
 Avec le jour proposé (forte pluie à Taharu'u) :
 
 ```text
-Conforme ? non   (probabilité de non : 99 %)
+Prédiction : non
+Probabilité de non : 99 %
 ```
 
 Avec vos propres valeurs, le résultat change, bien sûr.
@@ -688,30 +726,31 @@ Avec vos propres valeurs, le résultat change, bien sûr.
 
 > **Je prédis → J'exécute → Je constate**
 
-`coef_` donne un coefficient par feature. Attention au sens : scikit-learn calcule la probabilité de la classe numéro 1, c'est-à-dire `oui`. Un coefficient **négatif** pousse donc vers `non`. Les features numériques ont été normalisées : on peut comparer leurs coefficients entre eux, mais avec prudence.
+`coef_` donne un coefficient par feature. La cellule les remet dans le bon sens : un effet **positif** pousse vers la classe à détecter, un effet négatif pousse vers l'autre classe. Les features numériques ont été normalisées : on peut comparer leurs effets entre eux, mais avec prudence.
 
 **Questions**
-- Quelle feature pousse le plus vers « non conforme » ? Est-ce logique ?
+- Quelle feature pousse le plus vers la classe à détecter ? Est-ce logique ?
 
 ```python
-coefficients = pd.DataFrame({"feature": X_train_prep.columns,
-                             "coefficient": modele.coef_[0].round(2)})
-print(coefficients.sort_values("coefficient").to_string(index=False))
+sens = 1 if code_positif == 1 else -1   # scikit-learn calcule pour la classe n° 1 : on remet dans le bon sens
+effets = pd.DataFrame({"feature": X_train_prep.columns,
+                       "effet": (sens * modele.coef_[0]).round(2)})
+effets.sort_values("effet", ascending=False)
 ```
 
 **Ce que vous devez obtenir**
 
 ```text
-             feature  coefficient
-        pluie_72h_mm        -1.59
-       plage_taharuu        -0.88
-        pluie_24h_mm        -0.54
-           debit_m3s        -0.54
-  saison_ete_austral        -0.07
-saison_hiver_austral         0.07
-       temperature_C         0.20
-        plage_vaiava         0.38
-          plage_pk18         0.49
+                feature  effet
+1          pluie_72h_mm   1.59
+5         plage_taharuu   0.88
+0          pluie_24h_mm   0.54
+3             debit_m3s   0.54
+7    saison_ete_austral   0.07
+8  saison_hiver_austral  -0.07
+2         temperature_C  -0.20
+6          plage_vaiava  -0.38
+4            plage_pk18  -0.49
 ```
 
 ---
@@ -720,18 +759,80 @@ saison_hiver_austral         0.07
 
 Le chemin est **toujours le même** :
 
-> charger → choisir X et y → séparer (stratifié) → trier → normaliser → encoder les features texte → encoder la cible → réunir → `fit` → `score` → `predict` / `predict_proba`
+> réglages → charger → X et y → séparer (stratifié) → trier → normaliser → encoder les features texte → encoder la cible → réunir → `fit` → `score` → `predict` / `predict_proba`
 
-Pour un autre problème de classification, par exemple « ce récif est-il en bonne santé ? » ou « cet abonné va-t-il résilier ? », **seules 4 choses changent** :
+Pour un autre problème de classification, par exemple « ce récif est-il en bonne santé ? » ou « cette parcelle est-elle touchée par un ravageur ? », **seules 5 choses changent**, toutes marquées `À CHANGER` :
 
 | | Ce qui change | Dans ce TP | Pour votre problème |
 |---|---|---|---|
 | **1** | **Le fichier** (`URL`) | `baignade_taharuu.csv` | l'adresse de votre fichier CSV |
-| **2** | **Les features** (X) | toutes les colonnes sauf `date` et `conforme` | les colonnes qui servent à prédire |
-| **3** | **La cible** (y) | `conforme` | la colonne à prédire, une catégorie |
-| **4** | **La classe qui compte** (`code_non`) | `non` | la classe qu'on ne veut pas rater |
+| **2** | **La cible** (`cible`) | `"conforme"` | la colonne à prédire, une catégorie |
+| **3** | **Les colonnes à écarter** (`colonnes_a_exclure`) | `["date"]` | identifiants, dates, ou toute colonne qui donnerait la réponse |
+| **4** | **La classe à détecter** (`classe_a_detecter`) | `"non"` | la classe qu'on ne veut pas rater |
+| **5** | **Le cas inventé** (`X_nouveau`) | un jour de pluie à Taharu'u | un cas avec exactement les colonnes de X |
 
-Tout le reste ne change pas : les cellules de l'étape 0 du TP 2 et des questions Q2 à Q6 fonctionnent telles quelles.
+**Tout le reste ne change pas** : toutes les autres cellules du TP 1 et du TP 2 se copient telles quelles. Deux conditions : le fichier doit être propre (sans cases vides), et la cible doit avoir **deux classes**, comme ici.
+
+Voici la recette complète en une seule cellule. Les blocs `À CHANGER` sont en haut, et rien ne change sous la ligne `RIEN NE CHANGE`. Telle quelle, elle refait ce TP.
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import recall_score, precision_score
+
+# =============== RÉGLAGES DU PROJET : les seules lignes à changer ===============
+URL = "https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/baignade_taharuu.csv"  # À CHANGER
+cible = "conforme"            # À CHANGER : la colonne à prédire
+colonnes_a_exclure = ["date"]  # À CHANGER : les colonnes qui ne servent pas à prédire
+classe_a_detecter = "non"     # À CHANGER : la classe qu'on ne veut pas rater
+X_nouveau = pd.DataFrame({    # À CHANGER : un cas inventé, avec exactement les colonnes de X
+    "plage": ["taharuu"], "pluie_24h_mm": [35.0], "pluie_72h_mm": [80.0],
+    "temperature_C": [26.5], "debit_m3s": [8.0], "saison": ["ete_austral"],
+})
+
+# ===================== À PARTIR D'ICI, RIEN NE CHANGE =====================
+df = pd.read_csv(URL)
+X = df.drop(columns=colonnes_a_exclure + [cible])
+y = df[cible]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+colonnes_num = X_train.select_dtypes(include="number").columns
+colonnes_texte = X_train.select_dtypes(exclude="number").columns
+scaler = StandardScaler()
+encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+label_encoder = LabelEncoder()
+
+X_train_prep = pd.concat([
+    pd.DataFrame(scaler.fit_transform(X_train[colonnes_num]), columns=colonnes_num, index=X_train.index),
+    pd.DataFrame(encoder.fit_transform(X_train[colonnes_texte]), columns=encoder.get_feature_names_out(), index=X_train.index),
+], axis=1)
+X_test_prep = pd.concat([
+    pd.DataFrame(scaler.transform(X_test[colonnes_num]), columns=colonnes_num, index=X_test.index),
+    pd.DataFrame(encoder.transform(X_test[colonnes_texte]), columns=encoder.get_feature_names_out(), index=X_test.index),
+], axis=1)
+X_nouveau_prep = pd.concat([
+    pd.DataFrame(scaler.transform(X_nouveau[colonnes_num]), columns=colonnes_num),
+    pd.DataFrame(encoder.transform(X_nouveau[colonnes_texte]), columns=encoder.get_feature_names_out()),
+], axis=1)
+y_train_enc = label_encoder.fit_transform(y_train)
+y_test_enc = label_encoder.transform(y_test)
+code_positif = label_encoder.transform([classe_a_detecter])[0]
+
+modele = LogisticRegression(random_state=42)
+modele.fit(X_train_prep, y_train_enc)
+y_pred = modele.predict(X_test_prep)
+
+classe_frequente = y_train.value_counts().index[0]
+print("Exactitude du modèle          :", round(modele.score(X_test_prep, y_test_enc) * 100, 1), "%")
+print("Exactitude du modèle paresseux :", round((y_test == classe_frequente).mean() * 100, 1), "%")
+print("Rappel    de", classe_a_detecter, ":", round(recall_score(y_test_enc, y_pred, pos_label=code_positif) * 100, 1), "%")
+print("Précision de", classe_a_detecter, ":", round(precision_score(y_test_enc, y_pred, pos_label=code_positif) * 100, 1), "%")
+print("Prédiction pour le cas inventé :", label_encoder.inverse_transform(modele.predict(X_nouveau_prep))[0])
+```
+
+Telle quelle, la cellule affiche une exactitude de 91,1 %, 83,6 % pour le modèle paresseux, un rappel de `non` de 58,3 %, une précision de 82,4 %, et `non` pour le cas inventé.
 
 ## Ce qu'il faut rendre
 
