@@ -15,3 +15,5 @@ kaggle
 nbformat
 nbconvert
 ipykernel
+tensorflow
+pillow

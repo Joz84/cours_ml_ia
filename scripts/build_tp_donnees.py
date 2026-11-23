@@ -1,6 +1,6 @@
 """Génère les notebooks ÉLÈVE et CORRIGÉ des TP « données propres, données lues ».
 
-Usage : python scripts/build_tp_donnees.py nettoyage|analyse_exploratoire|visualisation [--executer]
+Usage : python scripts/build_tp_donnees.py nettoyage|analyse_exploratoire|visualisation|classification_images [--executer]
 
 Le README (tp/<nom>/README.md) est la seule source du code : chaque bloc
 ```python``` devient une cellule de code, le texte qui le précède devient une
@@ -101,7 +101,7 @@ def executer(chemin, cfg):
     remplacer(nb, locales)
     # comme dans Colab : les graphiques s'affichent dans le carnet
     os.environ["MPLBACKEND"] = "module://matplotlib_inline.backend_inline"
-    ExecutePreprocessor(timeout=900, kernel_name=NOYAU).preprocess(
+    ExecutePreprocessor(timeout=getattr(cfg, "TIMEOUT", 900), kernel_name=NOYAU).preprocess(
         nb, {"metadata": {"path": str(chemin.parent)}})
     remplacer(nb, {v: k for k, v in locales.items()})
     nb.metadata["kernelspec"] = {"name": "python3", "display_name": "Python 3", "language": "python"}
