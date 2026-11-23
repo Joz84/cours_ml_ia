@@ -3,6 +3,8 @@ pandas
 numpy
 scikit-learn
 matplotlib
+ydata-profiling   # TP 2 (installé par le carnet lui-même dans Colab)
+ipywidgets        # pour afficher le rapport ydata-profiling dans le carnet
 
 # Pour regénérer les données et les notebooks en local (scripts/, *.py à la racine)
 requests
