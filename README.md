@@ -14,6 +14,14 @@ Ce cours apprend à **faire parler des données environnementales**, sans être 
 
 ## Le plan des TP
 
+### Avant le cours · Atelier d'initiation
+
+Un premier contact ludique avec les données, sans rien savoir coder : on lance des cellules, on parie sur des QCM, et les graphiques donnent la réponse. Commun aux licences STES et SPI.
+
+| Atelier | Ce qu'on apprend | Durée |
+|---|---|---|
+| [**Atelier 0 · L'électricité de Tahiti**](tp/atelier_initiation/README.md) | Charger, filtrer, regrouper et tracer avec **pandas** et **matplotlib**, sur la production d'électricité de Tahiti heure par heure de 2015 à 2025 (thermique, hydraulique, solaire). 9 QCM corrigés en direct : l'heure de pointe, le record solaire, le confinement de 2020, une coupure de courant à élucider… | 1 h 30 |
+
 ### Séance 5 · Des données propres, des données lues
 
 Avant tout modèle, il faut un tableau propre, compris et bien montré. Les trois TP s'enchaînent sur les mêmes relevés météo de 5 stations de Tahiti (données simulées) : le TP 2 et le TP 3 partent du tableau nettoyé au TP 1.
@@ -62,12 +70,13 @@ scripts/               les scripts qui fabriquent les données et les notebooks
 
 Tous les fichiers de données se lisent directement depuis Colab, par leur adresse GitHub, par exemple `https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/releves_meteo_propre.csv`.
 
-Pour regénérer les données et les notebooks en local : `pip install -r requirements.txt`. Les scripts `scripts/prepare_*.py`, `scripts/make_releves_brut.py` et `scripts/make_dataset_exemple.py` fabriquent les données ; les scripts `scripts/build_tp*.py` fabriquent les notebooks à partir des README.
+Pour regénérer les données et les notebooks en local : `pip install -r requirements.txt`. Les scripts `scripts/prepare_*.py` (dont `prepare_energie_tahiti.py`), `scripts/make_releves_brut.py` et `scripts/make_dataset_exemple.py` fabriquent les données ; les scripts `scripts/build_tp*.py` fabriquent les notebooks à partir des README.
 
 ## Les données et leurs sources
 
 | Données | Source | Réelles ou simulées |
 |---|---|---|
+| Électricité de Tahiti (atelier 0) | Service des énergies de la Polynésie française (mesures EDT), utilisée à des fins pédagogiques dans le cadre du partenariat UPF – Service des énergies | réelles |
 | Relevés météo de 5 stations (TP 1, 2, 3) | climat calqué sur Météo-France, station de Faa'a | simulées, salies volontairement pour le TP 1 |
 | Rayonnement solaire (régression) | Météo-France, données climatologiques quotidiennes, département 987, Licence Ouverte 2.0 | réelles |
 | Baignade (classification) | pluie et température Météo-France ; débit et conformité simulés | en partie simulées |
