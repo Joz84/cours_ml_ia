@@ -40,13 +40,14 @@ Une photo entre, une classe sort : corail sain, pâle ou blanchi ; type de déch
 
 | TP | Ce qu'on apprend | Durée |
 |---|---|---|
-| [**TP · Classer des photos**](tp/classification_images/README.md) | Le **transfert d'apprentissage** (MobileNetV2, poids gelés, dernière couche neuve) ; le **preprocessing des images** (collecter, séparer avant tout, nettoyer, redimensionner, augmenter à la volée) ; les deux courbes et le sur-apprentissage ; la matrice de confusion et le **seuil de confiance** ; la **carte de chaleur** pour vérifier où regarde le modèle. Un carnet-tuto à rejouer sur vos propres photos. | 2 h |
+| [**TP · Classer des photos**](tp/classer_photos/README.md) | Le **transfert d'apprentissage** (MobileNetV2, poids gelés, dernière couche neuve) ; le **preprocessing des images** (collecter, nettoyer, séparer avant tout, redimensionner, augmenter à la volée) ; les deux courbes et le sur-apprentissage ; la matrice de confusion et le **seuil de confiance** ; la **carte de chaleur** pour vérifier où regarde le modèle. Une cellule = une ou deux lignes, grâce à une boîte à outils ; un carnet-tuto à rejouer sur vos propres photos. | 1 h 30 |
 
 ### Annexe
 
 | TP | Ce qu'on apprend |
 |---|---|
 | [**TP-prompting**](tp/annexe_prompting/README.md) | Explorer, nettoyer et visualiser un jeu de données **en dialoguant avec un assistant IA**, à partir de prompts, sur un panorama de l'IA et du machine learning (Epoch AI, Eurostat, Kaggle, Our World in Data). |
+| [**Classer des photos – exhaustif**](tp/classification_images/README.md) | La version longue du TP de la séance 7 : tout le code visible cellule par cellule, 15 questions et 2 bonus (partage par site, fine-tuning). Pour celles et ceux qui veulent voir ce que fait la boîte à outils. |
 
 ## Le dépôt
 

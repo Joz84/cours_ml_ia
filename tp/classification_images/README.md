@@ -1,8 +1,10 @@
-# TP · Classer des photos
+# Annexe · Classer des photos – exhaustif
 
 [![Ouvrir dans Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Joz84/cours_ml_ia/blob/main/tp/classification_images/TP_classification_images_ELEVE.ipynb)
 
 UE 5.7 « Data Science et IA » · Licence STES · Université de la Polynésie française
+
+> **Version exhaustive**, en annexe : tout le code est visible, cellule par cellule. Pour la séance, préférez la [version simple du TP](../classer_photos/README.md), où chaque cellule tient en une ou deux lignes grâce à une boîte à outils.
 
 Dans le cours de la séance 7, « Deep learning et images », vous avez vu trois cas : reconnaître un **corail sain, pâle ou blanchi** ; trier des photos de **déchets par type** ; repérer le **miconia** au milieu de la végétation. Les trois sont le même problème : **une photo entre, une classe sort.** Ce TP vous fait entraîner un tel modèle de bout en bout, en **réutilisant un réseau pré-entraîné** (le **transfert d'apprentissage**), puis l'évaluer avec les outils de la séance 6, l'utiliser sur des photos nouvelles, et vérifier **où il regarde**.
 
