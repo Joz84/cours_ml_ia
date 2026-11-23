@@ -34,6 +34,14 @@ Chaque TP se fait en deux parties de 45 minutes : le **preprocessing** (séparer
 | [**TP · Classification**](tp/classification/README.md) | Prédire **une catégorie** : la plage est-elle baignable ? Régression logistique, matrice de confusion, rappel et précision, le piège de l'exactitude avec une classe rare, le seuil. | 2 × 45 min |
 | [**TP · Clustering**](tp/clustering/README.md) | **Regrouper sans cible** : quels profils d'abonnés à l'eau ? K-Means, la normalisation obligatoire, la méthode du coude. « Le modèle numérote les groupes, c'est vous qui les nommez. » | 2 × 45 min |
 
+### Séance 7 · Deep learning et images
+
+Une photo entre, une classe sort : corail sain, pâle ou blanchi ; type de déchet ; miconia ou autre végétation. On ne part jamais de zéro : on réutilise un réseau pré-entraîné.
+
+| TP | Ce qu'on apprend | Durée |
+|---|---|---|
+| [**TP · Classer des photos**](tp/classification_images/README.md) | Le **transfert d'apprentissage** (MobileNetV2, poids gelés, dernière couche neuve) ; le **preprocessing des images** (collecter, séparer avant tout, nettoyer, redimensionner, augmenter à la volée) ; les deux courbes et le sur-apprentissage ; la matrice de confusion et le **seuil de confiance** ; la **carte de chaleur** pour vérifier où regarde le modèle. Un carnet-tuto à rejouer sur vos propres photos. | 2 h |
+
 ### Annexe
 
 | TP | Ce qu'on apprend |
@@ -46,13 +54,14 @@ Chaque TP se fait en deux parties de 45 minutes : le **preprocessing** (séparer
 tp/                    un dossier par TP : README (l'énoncé), notebook ÉLÈVE, notebook CORRIGÉ
 data/raw/              les fichiers bruts du TP 1 (les autres données brutes ne sont pas versionnées)
 data/clean/            les tableaux prêts à l'emploi, lus par les TP depuis GitHub
+data/*.zip             les photos d'exemple du TP « Classer des photos »
 data/sources/          les données brutes de l'annexe, une par source (et data/sources_propres/ nettoyées)
 scripts/               les scripts qui fabriquent les données et les notebooks
 ```
 
 Tous les fichiers de données se lisent directement depuis Colab, par leur adresse GitHub, par exemple `https://raw.githubusercontent.com/Joz84/cours_ml_ia/main/data/clean/releves_meteo_propre.csv`.
 
-Pour regénérer les données et les notebooks en local : `pip install -r requirements.txt`. Les scripts `scripts/prepare_*.py` et `scripts/make_releves_brut.py` fabriquent les données ; les scripts `scripts/build_tp*.py` fabriquent les notebooks à partir des README.
+Pour regénérer les données et les notebooks en local : `pip install -r requirements.txt`. Les scripts `scripts/prepare_*.py`, `scripts/make_releves_brut.py` et `scripts/make_dataset_exemple.py` fabriquent les données ; les scripts `scripts/build_tp*.py` fabriquent les notebooks à partir des README.
 
 ## Les données et leurs sources
 
@@ -62,4 +71,5 @@ Pour regénérer les données et les notebooks en local : `pip install -r requir
 | Rayonnement solaire (régression) | Météo-France, données climatologiques quotidiennes, département 987, Licence Ouverte 2.0 | réelles |
 | Baignade (classification) | pluie et température Météo-France ; débit et conformité simulés | en partie simulées |
 | Abonnés à l'eau (clustering) | — | simulées |
+| Photos de fleurs (classer des photos) | jeu « flower_photos » de TensorFlow (Flickr), licence CC BY 2.0, auteurs listés dans chaque zip | réelles |
 | Panorama de l'IA (annexe) | Epoch AI, Eurostat, Kaggle, Our World in Data, Vinuesa et al. 2020 | réelles |
