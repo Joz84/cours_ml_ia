@@ -1,5 +1,9 @@
 .venv/
+.venv-colab/
 __pycache__/
 .ipynb_checkpoints/
 # Données brutes : volumineuses, à retélécharger avec download_data.py
-data/raw/
+data/raw/*
+# sauf les deux fichiers bruts du TP de nettoyage, chargés depuis GitHub
+!data/raw/releves_meteo_brut.csv
+!data/raw/pluie_mensuelle_large.csv
