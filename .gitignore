@@ -7,3 +7,6 @@ data/raw/*
 # sauf les deux fichiers bruts du TP de nettoyage, chargés depuis GitHub
 !data/raw/releves_meteo_brut.csv
 !data/raw/pluie_mensuelle_large.csv
+# photos d'exemple dézippées (seuls les zip sont publiés)
+data/images_exemple/
+data/photos_nouvelles/
